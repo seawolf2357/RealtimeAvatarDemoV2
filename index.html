@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="index.css" />
+  <link rel="icon" href="./favicon.ico" />
+</head>
+
+<body>
+  <h1>WebRTC Demo</h1>
+  <div class="container">
+    <div class="left">
+      <h2>Choose Talking Photo</h2>
+      <input type="file" class="chooser" id="chooser">
+      <div class="button-container">
+        <button id="uploadBtn">Upload</button>
+        <button id="silentVideoBtn">Generate Silent Video</button>
+      </div>
+
+      <h2>Params</h2>
+      <input id="avatarType" type="text" placeholder="Avatar Type">
+      <input id="photarID" type="text" placeholder="Photar ID">
+      <input id="avatarID" type="text" placeholder="Avatar ID">
+      <input id="voiceID" type="text" placeholder="Voice ID">
+      <input id="dimensionWidth" type="text" placeholder="Video Width">
+      <input id="dimensionHeight" type="text" placeholder="Video Height">
+      <input id="silentVideoURL" type="text" placeholder="Silent Video URL">
+
+      <h2>Connect WebRTC</h2>
+      <div class="button-container">
+        <button id="connBtn">Connect</button>
+        <button id="talkBtn">Talk</button>
+        <button id="closeBtn">Close</button>
+        <input id="taskInput" type="text" placeholder="Text to Talk">
+      </div>
+    </div>
+    <div class="right">
+      <p id="status"></p>
+      <video id="mediaElement" autoplay></video>
+    </div>
+  </div>
+  <script type="module" src="index.js"></script>
+</body>
