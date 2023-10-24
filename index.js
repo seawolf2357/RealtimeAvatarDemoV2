@@ -22,18 +22,14 @@ let videoComplete = false;
 let selectedPhotoFile = null
 
 const taskInput = document.querySelector("#taskInput");
-const avatarType = document.querySelector("#avatarType");
 const photarID = document.querySelector("#photarID");
-const avatarID = document.querySelector("#avatarID");
 const voiceID = document.querySelector("#voiceID");
 const silentVideoURL = document.querySelector("#silentVideoURL");
 const dimensionWidth = document.querySelector("#dimensionWidth");
 const dimensionHeight = document.querySelector("#dimensionHeight");
 
 if (heygen_API.avatar !== null && heygen_API.avatar !== undefined) {
-  avatarType.value = heygen_API.avatar.avatar_type;
   photarID.value = heygen_API.avatar.photar_id;
-  avatarID.value = heygen_API.avatar.avatar_id;
 }
 if (heygen_API.voice !== null && heygen_API.voice !== undefined) {
   voiceID.value = heygen_API.voice.voice_id;
@@ -162,7 +158,13 @@ async function createNewSession() {
   updateStatus(statusElement, "Creating new session... please wait");
 
   // call the new interface to get the server's offer SDP and ICE server to create a new RTCPeerConnection
-  sessionInfo = await newSession("high");
+  try {
+    sessionInfo = await newSession("high");
+  } catch (err) {
+    alert("Failed to create the session, " + err.message);
+    return;
+  }
+
   const { sdp: serverSdp, ice_servers: iceServers } = sessionInfo;
 
   // Create a new RTCPeerConnection
@@ -183,7 +185,8 @@ async function createNewSession() {
       `ICE connection state changed to: ${peerConnection.iceConnectionState}`
     );
     if (peerConnection.iceConnectionState === "disconnected") {
-      clearPeerConnection();
+      new Promise(resolve => setTimeout(resolve, 1000));
+      createNewSession();
     }
   };
 
@@ -207,7 +210,13 @@ async function createNewSession() {
   await peerConnection.setLocalDescription(localDescription);
 
   // Start session
-  await startSession(sessionInfo.session_id, localDescription);
+  try {
+    await startSession(sessionInfo.session_id, localDescription);
+  } catch (err) {
+    alert("Failed to start the session, " + err.message);
+    return;
+  }
+
   updateStatus(statusElement, "Session started successfully");
   updateStatus(statusElement, "Session creation completed");
 }
@@ -226,7 +235,12 @@ async function talkHandler() {
     return;
   }
 
-  const resp = await talk(sessionInfo.session_id, text);
+  try {
+    const resp = await talk(sessionInfo.session_id, text);
+  } catch (err) {
+    alert("Failed to send task to the session, " + err.message);
+    return;
+  }
 
   updateStatus(statusElement, "Task sent successfully");
 }
@@ -248,6 +262,7 @@ async function closeConnectionHandler() {
 
     clearPeerConnection();
   } catch (err) {
+    alert("Failed to close the connection, " + err.message);
     console.error("Failed to close the connection:", err);
   }
   updateStatus(statusElement, "Connection closed successfully");
@@ -256,26 +271,25 @@ async function closeConnectionHandler() {
 
 // new session
 async function newSession(quality) {
-  const dimension = null;
+  let dimension = null;
   if (dimensionWidth.value !== "" && dimensionHeight.value !== "") {
     dimension = {
-      width: int(dimensionWidth.value),
-      height: int(dimensionHeight.value),
+      width: Number(dimensionWidth.value),
+      height: Number(dimensionHeight.value),
     }
   }
   const body = {
     quality,
     avatar: {
-      avatar_type: avatarType.value,
+      avatar_type: "photar",
       photar_id: photarID.value,
-      avatar_id: avatarID.value,
     },
     voice: {
       voice_id: voiceID.value,
     },
     dimension,
   };
-  const response = await fetch(`${SERVER_URL}/v2/realtime.new`, {
+  const response = await fetch(`${SERVER_URL}/v2/realtime/new`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -284,13 +298,14 @@ async function newSession(quality) {
     body: JSON.stringify(body),
   });
   if (response.status === 500) {
-    console.error("Server error");
     updateStatus(
       statusElement,
       "Server Error. Please ask the staff if the service has been turned on"
     );
-
     throw new Error("Server error");
+  } else if (response.status === 400) {
+    const data = await response.json();
+    throw new Error(data.error.message);
   } else {
     const data = await response.json();
     console.log(data.data);
@@ -300,7 +315,7 @@ async function newSession(quality) {
 
 // start the session
 async function startSession(session_id, sdp) {
-  const response = await fetch(`${SERVER_URL}/v2/realtime.start`, {
+  const response = await fetch(`${SERVER_URL}/v2/realtime/start`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -315,6 +330,9 @@ async function startSession(session_id, sdp) {
       "Server Error. Please ask the staff if the service has been turned on"
     );
     throw new Error("Server error");
+  } else if (response.status === 400) {
+    const data = await response.json();
+    throw new Error(data.error.message);
   } else {
     const data = await response.json();
     return data.data;
@@ -323,7 +341,7 @@ async function startSession(session_id, sdp) {
 
 // submit the ICE candidate
 async function handleICE(session_id, candidate) {
-  const response = await fetch(`${SERVER_URL}/v2/realtime.ice`, {
+  const response = await fetch(`${SERVER_URL}/v2/realtime/ice`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -338,6 +356,9 @@ async function handleICE(session_id, candidate) {
       "Server Error. Please ask the staff if the service has been turned on"
     );
     throw new Error("Server error");
+  } else if (response.status === 400) {
+    const data = await response.json();
+    throw new Error(data.error.message);
   } else {
     const data = await response.json();
     return data;
@@ -345,7 +366,7 @@ async function handleICE(session_id, candidate) {
 }
 
 async function talk(session_id, text) {
-  const response = await fetch(`${SERVER_URL}/v2/realtime.task`, {
+  const response = await fetch(`${SERVER_URL}/v2/realtime/task`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -360,6 +381,9 @@ async function talk(session_id, text) {
       "Server Error. Please ask the staff if the service has been turned on"
     );
     throw new Error("Server error");
+  } else if (response.status === 400) {
+    const data = await response.json();
+    throw new Error(data.error.message);
   } else {
     const data = await response.json();
     return data.data;
@@ -368,7 +392,7 @@ async function talk(session_id, text) {
 
 // stop session
 async function stopSession(session_id) {
-  const response = await fetch(`${SERVER_URL}/v2/realtime.stop`, {
+  const response = await fetch(`${SERVER_URL}/v2/realtime/stop`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -380,6 +404,9 @@ async function stopSession(session_id) {
     console.error("Server error");
     updateStatus(statusElement, "Server Error. Please ask the staff for help");
     throw new Error("Server error");
+  } else if (response.status === 400) {
+    const data = await response.json();
+    throw new Error(data.error.message);
   } else {
     const data = await response.json();
     return data.data;
@@ -395,6 +422,7 @@ async function uploadTalkingHandler(){
     method:'POST',
     headers: {
       "X-Api-Key": API_KEY,
+      "content-type": selectedPhotoFile.type,
     },
     body: new Blob([selectedPhotoFile], { type: selectedPhotoFile.type }),
   })
@@ -405,8 +433,8 @@ async function uploadTalkingHandler(){
   }
 
   const {data} = await response.json()
+  console.log(data)
 
-  avatar_type.value = "photar"
   photarID.value = data.talking_photo_id
 
   updateStatus(statusElement, "Upload talking photo successfully, photar_id is " + data.talking_photo_id);
@@ -449,7 +477,7 @@ async function generateSilentVideoHandler(){
 
 async function getPublicUrl(video_id){
   while(true){
-    await sleep(1);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const response = await fetch(`${SERVER_URL}/v1/video_status.get?video_id=${video_id}`, {
       method: "GET",
       headers: {

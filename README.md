@@ -24,7 +24,7 @@ Follow these steps to run the demo:
 1. Clone the repository to your local machine:
 
    ```bash
-   git clone https://github.com/HeyGen-Official/RealtimeDemo.git
+   git clone https://github.com/HeyGen-Official/RealtimeDemoV2.git
    ```
 
 2. Open the `api.json` file put your **api key** and change your parameters. _You can also set the parameters from the web interface._
