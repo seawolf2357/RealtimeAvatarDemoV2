@@ -44,6 +44,8 @@ if (heygen_API.silent_video_url !== null && heygen_API.silent_video_url !== unde
 
 const mediaElement = document.querySelector("#mediaElement");
 mediaElement.setAttribute('playsinline', '');
+const silentMediaElement = document.querySelector("#silentMediaElement");
+silentMediaElement.setAttribute('playsinline', '');
 
 document
   .querySelector("#connBtn")
@@ -89,16 +91,19 @@ updateStatus(
 function playTaskVideo(stream) {
   if (!stream) return;
   mediaElement.srcObject = stream;
-  mediaElement.loop = false;
   mediaElement.onloadedmetadata = () => {
     mediaElement.play();
+
+    silentMediaElement.classList.remove('visible');
+    mediaElement.classList.add('visible');
   };
 }
 
 function playSilentVideo() {
-  mediaElement.srcObject = undefined;
-  mediaElement.src = silentVideoURL.value;
-  mediaElement.loop = true;
+  silentMediaElement.src = silentVideoURL.value;
+
+  mediaElement.classList.remove('visible');
+  silentMediaElement.classList.add('visible');
 }
 
 function onTrack(event) {
@@ -229,6 +234,8 @@ async function talkHandler() {
 
 // when clicking the "Close" button, close the connection
 async function closeConnectionHandler() {
+  silentMediaElement.src = undefined;
+
   if (!sessionInfo) {
     updateStatus(statusElement, "Please create a connection first");
     return;

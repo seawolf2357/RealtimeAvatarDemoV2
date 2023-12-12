@@ -34,7 +34,11 @@
     </div>
     <div class="right">
       <p id="status"></p>
-      <video id="mediaElement" autoplay></video>
+
+      <div class="videoWrap">
+        <video id="silentMediaElement" class="visible" autoplay loop preload="yes"></video>
+        <video id="mediaElement" autoplay loop preload="yes"></video>
+      </div>
     </div>
   </div>
   <script type="module" src="index.js"></script>
