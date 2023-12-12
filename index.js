@@ -111,34 +111,22 @@ function onTrack(event) {
         return;
       }
       const isVideoPlaying = report.bytesReceived > lastBytesReceived;
-      const stateChange = isVideoPlaying !== lastVideoState;
       lastBytesReceived = report.bytesReceived;
-      if (stateChange === false) {
-        return;
-      }
-      if (isVideoPlaying === true) {
+
+      if (isVideoPlaying === true && lastVideoState===false) {
         playTaskVideo(event.streams[0]);
-        lastVideoState = isVideoPlaying;
-      } else if (videoComplete === true) {
+        lastVideoState = true
+        console.log("change to playTaskVideo")
+      } else if (isVideoPlaying===false && lastVideoState===true) {
         playSilentVideo();
-        lastVideoState = isVideoPlaying;
+        lastVideoState = false
+        console.log("change to playSilentVideo")
       }
     });
-  }, 100);
+  }, 500);
 }
 
-function onMessage(event) {
-  const message = event.data;
-  console.log("Received message:", message);
-  const arrayOfStrings = message.split(":");
-  const taskID = arrayOfStrings[0];
-  const taskCmd = arrayOfStrings[1];
-  if (taskCmd === "start") {
-    videoComplete = false;
-  } else if (taskCmd === "end") {
-    videoComplete = true;
-  }
-}
+
 
 function clearPeerConnection() {
   if (stateID !== null) {
@@ -188,12 +176,6 @@ async function createNewSession() {
       new Promise(resolve => setTimeout(resolve, 1000));
       createNewSession();
     }
-  };
-
-  // When receiving a message, display it in the status element
-  peerConnection.ondatachannel = (event) => {
-    const dataChannel = event.channel;
-    dataChannel.onmessage = onMessage;
   };
 
   // When audio and video streams are received, display them in the video element
