@@ -1,6 +1,21 @@
 "use strict";
 
-import heygen_API from "./api.json" assert { type: "json" };
+// ************************************************************************
+// Set your api configs below
+const heygen_API = {
+  'server_url': 'https://api.heygen.com',
+  'upload_url': 'https://upload.heygen.com',
+  'api_key': '',
+  'avatar': {
+    'avatar_type': 'photar',
+    'photar_id': ''
+  },
+  'voice': {
+    'voice_id': ''
+  },
+  'silent_video_url': 'https://resource.heygen.com/silent.mp4'
+};
+// ************************************************************************
 
 const SERVER_URL = heygen_API.server_url;
 const UPLOAD_URL = heygen_API.upload_url;
