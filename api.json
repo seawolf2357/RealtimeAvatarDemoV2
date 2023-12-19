@@ -1,0 +1,15 @@
+
+{
+  "server_url": "https://api.heygen.com",
+  "upload_url": "https://upload.heygen.com",
+  "api_key": "YjY1OTQ2MDZmNzdmNGU2ZWE1YjIxMWVjZWJlMmEzYTgtMTY3NTM5MDg3NQ==",
+  "avatar": {
+    "avatar_type": "<avatar_type>",
+    "photar_id": "<photar_id>",
+    "avatar_id": "<avatar_id>"
+  },
+  "voice": {
+    "voice_id": "<voice_id>"
+  },
+  "silence_video_url": "<silence_video_url>"
+}
